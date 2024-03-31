@@ -1,20 +1,22 @@
-import functools
+from functools import wraps
+import typing
 
 
 def memo(func):
     """
-  Декоратор, запоминающий результаты исполнения функции func, чьи аргументы args должны быть хешируемыми
-  """
-    cache = {}
+    Декоратор, запоминающий результаты исполнения функции func, чьи аргументы args должны быть хешируемыми
+    """
 
-    @functools.wraps(func)
-    def wrapper(*args):
-        if args in cache:
-            print(f"Using cached result for {args}")
-            return cache[args]
-        else:
-            result = func(*args)
-            cache[args] = result
+    @wraps(func)
+    def fmemo(*args):
+        if all(isinstance(arg, typing.Hashable) for arg in args):
+            if args in fmemo.cache:
+                result = fmemo.cache[args]
+            else:
+                result = fmemo.cache[args] = func(*args)
             return result
+        else:
+            return func(*args)
 
-    return wrapper
+    fmemo.cache = {}
+    return fmemo
